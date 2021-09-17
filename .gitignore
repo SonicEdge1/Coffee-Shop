@@ -1,0 +1,5 @@
+# ignore the env directory
+
+# ignore the db cache files
+backend/src/__pycache__/
+backend/src/db/__pycache__/
