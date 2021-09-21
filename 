@@ -1,0 +1,232 @@
+[1mdiff --git a/backend/src/api.py b/backend/src/api.py[m
+[1mindex f621dae..96f70f8 100755[m
+[1m--- a/backend/src/api.py[m
+[1m+++ b/backend/src/api.py[m
+[36m@@ -2,11 +2,10 @@[m
+ # https://joes-coffee-shop.us.auth0.com/authorize?audience=CoffeeShopAPI&response_type=token&client_id=fjb33CnyG41x67vtWHdhTREa450KpVkh&redirect_uri=http://localhost:8080/login-results[m
+ [m
+ [m
+[31m-import os[m
+[31m-from flask import Flask, request, abort, jsonify[m
+[31m-from flask import abort[m
+[31m-from sqlalchemy import exc[m
+[32m+[m[32m# import os[m
+ import json[m
+[32m+[m[32mfrom flask import Flask, request, abort, jsonify[m
+[32m+[m[32m# from sqlalchemy import exc[m
+ from flask_cors import CORS[m
+ [m
+ from .database.models import db_drop_and_create_all, setup_db, Drink[m
+[36m@@ -36,21 +35,24 @@[m [mCORS(app)[m
+ !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN[m
+ !! Running this funciton will add one[m
+ '''[m
+[31m-#db_drop_and_create_all()[m
+[32m+[m[32m# db_drop_and_create_all()[m
+ [m
+ # ROUTES[m
+ '''[m
+     GET /drinks[m
+         public endpoint[m
+         contains only the drink.short() data representation[m
+[31m-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks[m
+[32m+[m[32m    returns status code 200 and json {"success": True, "drinks": drinks}[m
+[32m+[m[32m        where drinks is the list of drinks[m
+         or appropriate status code indicating reason for failure[m
+ '''[m
+[32m+[m
+[32m+[m
+ @app.route('/drinks')[m
+ def get_drinks():[m
+     try:[m
+         all_drinks = Drink.query.all()[m
+[31m-        drinks=[drink.short() for drink in all_drinks][m
+[32m+[m[32m        drinks = [drink.short() for drink in all_drinks][m
+         return jsonify({[m
+             'success': True,[m
+             'drinks': drinks,[m
+[36m@@ -59,19 +61,23 @@[m [mdef get_drinks():[m
+         print("Exception: ", e)[m
+         abort(UNPROCESSABLE_ENTITY)[m
+ [m
+[32m+[m
+ '''[m
+     GET /drinks-detail[m
+         requires the 'get:drinks-detail' permission[m
+         contains the drink.long() data representation[m
+[31m-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks[m
+[32m+[m[32m    returns status code 200 and json {"success": True, "drinks": drinks}[m
+[32m+[m[32m        where drinks is the list of drinks[m
+         or appropriate status code indicating reason for failure[m
+ '''[m
+[32m+[m
+[32m+[m
+ @app.route('/drinks-detail')[m
+ @requires_auth('get:drinks-detail')[m
+ def get_drinks_detail(payload):[m
+     try:[m
+         all_drinks = Drink.query.all()[m
+[31m-        drinks=[drink.long() for drink in all_drinks][m
+[32m+[m[32m        drinks = [drink.long() for drink in all_drinks][m
+ [m
+         return jsonify({[m
+             'success': True,[m
+[36m@@ -81,14 +87,18 @@[m [mdef get_drinks_detail(payload):[m
+         print("Exception: ", e)[m
+         abort(UNPROCESSABLE_ENTITY)[m
+ [m
+[32m+[m
+ '''[m
+     POST /drinks[m
+         creates a new row in the drinks table[m
+         requires the 'post:drinks' permission[m
+         contains the drink.long() data representation[m
+[31m-    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink[m
+[32m+[m[32m    returns status code 200 and json {"success": True, "drinks": drink}[m
+[32m+[m[32m        where drink an array containing only the newly created drink[m
+         or appropriate status code indicating reason for failure[m
+ '''[m
+[32m+[m
+[32m+[m
+ @app.route('/drinks', methods=['POST'])[m
+ @requires_auth('post:drinks')[m
+ def add_drink(payload):[m
+[36m@@ -96,12 +106,13 @@[m [mdef add_drink(payload):[m
+         body = request.get_json()[m
+         new_title = body.get("title")[m
+         new_recipe = body.get("recipe")[m
+[31m-        new_drink=Drink([m
+[32m+[m[32m        new_drink = Drink([m
+             title=new_title,[m
+             recipe=json.dumps(new_recipe)[m
+         )[m
+         new_drink.insert()[m
+[31m-        queried_drink=Drink.query.filter(Drink.title == new_title).one_or_none()[m
+[32m+[m[32m        queried_drink = Drink.query.filter([m
+[32m+[m[32m            Drink.title == new_title).one_or_none()[m
+         drink = [queried_drink.long()][m
+         return jsonify({[m
+             'success': True,[m
+[36m@@ -109,7 +120,8 @@[m [mdef add_drink(payload):[m
+         }), OK[m
+     except Exception as e:[m
+         print("Exception: ", e)[m
+[31m-        abort(UNPROCESSABLE_ENTITY) [m
+[32m+[m[32m        abort(UNPROCESSABLE_ENTITY)[m
+[32m+[m
+ [m
+ '''[m
+     PATCH /drinks/<id>[m
+[36m@@ -118,13 +130,16 @@[m [mdef add_drink(payload):[m
+         updates the corresponding row for <id>[m
+         requires the 'patch:drinks' permission[m
+         contains the drink.long() data representation[m
+[31m-    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink[m
+[32m+[m[32m    returns status code 200 and json {"success": True, "drinks": drink}[m
+[32m+[m[32m        where drink an array containing only the updated drink[m
+         or appropriate status code indicating reason for failure[m
+ '''[m
+[32m+[m
+[32m+[m
+ @app.route('/drinks/<int:drink_id>', methods=['PATCH'])[m
+ @requires_auth('patch:drinks')[m
+ def update_drink(payload, drink_id):[m
+[31m-    queried_drink=Drink.query.filter(Drink.id == drink_id).one_or_none()[m
+[32m+[m[32m    queried_drink = Drink.query.filter(Drink.id == drink_id).one_or_none()[m
+     if queried_drink is None:[m
+         print("drink: ", queried_drink)[m
+         abort(RESOURCE_NOT_FOUND)[m
+[36m@@ -134,9 +149,8 @@[m [mdef update_drink(payload, drink_id):[m
+         edited_recipe = body.get("recipe")[m
+         queried_drink.title = edited_title[m
+         queried_drink.recipe = json.dumps(edited_recipe)[m
+[31m-        title = queried_drink.title[m
+         queried_drink.update()[m
+[31m-        drink=[queried_drink.long()][m
+[32m+[m[32m        drink = [queried_drink.long()][m
+         return jsonify({[m
+             'success': True,[m
+             'drinks': drink,[m
+[36m@@ -145,24 +159,27 @@[m [mdef update_drink(payload, drink_id):[m
+         print("Exception: ", e)[m
+         abort(UNPROCESSABLE_ENTITY)[m
+ [m
+[32m+[m
+ '''[m
+     DELETE /drinks/<id>[m
+         where <id> is the existing model id[m
+         responds with a 404 error if <id> is not found[m
+         deletes the corresponding row for <id>[m
+         requires the 'delete:drinks' permission[m
+[31m-    returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record[m
+[32m+[m[32m    returns status code 200 and json {"success": True, "delete": id}[m
+[32m+[m[32m        where id is the id of the deleted record[m
+         or appropriate status code indicating reason for failure[m
+ '''[m
+[32m+[m
+[32m+[m
+ @app.route('/drinks/<int:drink_id>', methods=['DELETE'])[m
+ @requires_auth('delete:drinks')[m
+ def delete_drink(payload, drink_id):[m
+[31m-    drink=Drink.query.get(drink_id)[m
+[32m+[m[32m    drink = Drink.query.get(drink_id)[m
+     if drink is None:[m
+         print("drink: ", drink)[m
+         abort(RESOURCE_NOT_FOUND)[m
+     try:[m
+[31m-        title = drink.title[m
+         drink.delete()[m
+         return jsonify({[m
+             'success': True,[m
+[36m@@ -173,6 +190,8 @@[m [mdef delete_drink(payload, drink_id):[m
+         abort(UNPROCESSABLE_ENTITY)[m
+ [m
+ # Error Handling[m
+[32m+[m
+[32m+[m
+ @app.errorhandler(422)[m
+ def unprocessable(error):[m
+     return jsonify({[m
+[36m@@ -181,6 +200,7 @@[m [mdef unprocessable(error):[m
+         "message": UNPROCESSABLE_ENTITY_MSG[m
+     }), UNPROCESSABLE_ENTITY[m
+ [m
+[32m+[m
+ @app.errorhandler(404)[m
+ def resource_not_found(error):[m
+     return jsonify({[m
+[36m@@ -189,23 +209,24 @@[m [mdef resource_not_found(error):[m
+         "message": RESOURCE_NOT_FOUND_MSG[m
+     }), RESOURCE_NOT_FOUND[m
+ [m
+[32m+[m
+ @app.errorhandler(AuthError)[m
+ def auth_error(error):[m
+[31m-    #401[m
+[32m+[m[32m    # 401[m
+     if error.status_code == UNAUTHORIZED:[m
+         return jsonify({[m
+             "success": False,[m
+             "error": UNAUTHORIZED,[m
+             "message": UNAUTHORIZED_MSG[m
+         }), UNAUTHORIZED[m
+[31m-    #403[m
+[32m+[m[32m    # 403[m
+     elif error.status_code == FORBIDDEN:[m
+         return jsonify({[m
+             "success": False,[m
+             "error": FORBIDDEN,[m
+             "message": FORBIDDEN_MSG[m
+         }), FORBIDDEN[m
+[31m-    #400[m
+[32m+[m[32m    # 400[m
+     elif error.status_code == BAD_REQUEST:[m
+         return jsonify({[m
+             "success": False,[m
+[36m@@ -217,4 +238,4 @@[m [mdef auth_error(error):[m
+             "success": False,[m
+             "error": INTERNAL_SERVER_ERROR,[m
+             "message": INTERNAL_SERVER_ERROR_MSG[m
+[31m-        }), INTERNAL_SERVER_ERROR[m
+\ No newline at end of file[m
+[32m+[m[32m        }), INTERNAL_SERVER_ERROR[m

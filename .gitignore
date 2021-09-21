@@ -5,7 +5,8 @@ backend/src/__pycache__/
 backend/src/db/__pycache__/
 backend/src/auth/__pycache__/
 backend/src/database/__pycache__/
-
+backend/src/auth/__pycache__/auth.cpython-38.pyc
+\033
 venv/
 .vscode/
 __pycache__/
